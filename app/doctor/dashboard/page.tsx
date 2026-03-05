@@ -6,6 +6,7 @@ import { QrCode, LogOut, Camera, X, Users, Clock, CalendarDays } from "lucide-re
 import { AnimatedBackground } from "@/components/abha/animated-background"
 import { AbhaLogo } from "@/components/abha/logo"
 import { ThemeToggle } from "@/components/abha/theme-toggle"
+import { QRScanner } from "@/components/abha/qr-scanner"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -160,38 +161,13 @@ export default function DoctorDashboard() {
                 </button>
               </div>
 
-              <div className="relative w-full aspect-square bg-background/50 rounded-2xl overflow-hidden mb-4">
-                <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-accent rounded-tl-lg" />
-                <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-accent rounded-tr-lg" />
-                <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-accent rounded-bl-lg" />
-                <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-accent rounded-br-lg" />
-
-                <div
-                  className="absolute left-4 right-4 h-0.5 bg-accent/80"
-                  style={{ animation: "scanline 2s linear infinite", boxShadow: "0 0 10px #1A6EBF" }}
-                />
-
-                <div className="absolute inset-8 opacity-10">
-                  <div className="w-full h-full" style={{
-                    backgroundImage: "linear-gradient(#1A6EBF 1px, transparent 1px), linear-gradient(90deg, #1A6EBF 1px, transparent 1px)",
-                    backgroundSize: "20% 20%",
-                  }} />
-                </div>
-
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Camera size={32} className="text-muted-foreground/50" />
-                </div>
+              <div className="relative w-full aspect-square bg-background/50 rounded-2xl overflow-hidden mb-4 flex items-center justify-center">
+                <QRScanner onScanSuccess={handleScan} />
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={handleScan}
-                className="w-full py-3 rounded-xl font-semibold text-primary-foreground"
-                style={{ background: "linear-gradient(135deg, #1A6EBF, #0A7764)" }}
-              >
-                Simulate Scan
-              </motion.button>
+              <p className="text-xs text-center text-muted-foreground mb-4">
+                Position the QR code within the frame above
+              </p>
             </motion.div>
           </motion.div>
         )}
