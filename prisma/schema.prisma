@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String
+  email         String          @unique
+  abhaId        String?         @unique
+  passwordHash  String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  medicalRecords  MedicalRecord[]
+  emergencyProfile EmergencyProfile?
+}
+
+model MedicalRecord {
+  id          String   @id @default(cuid())
+  userId      String
+  fileUrl     String
+  fileName    String
+  fileType    String
+  aiSummary   String?
+  uploadedAt  DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyProfile {
+  id                    String  @id @default(cuid())
+  userId                String  @unique
+  bloodGroup            String  @default("")
+  allergies             String  @default("")
+  chronicConditions     String  @default("")
+  medications           String  @default("")
+  emergencyContactName  String  @default("")
+  emergencyContactPhone String  @default("")
+  
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
