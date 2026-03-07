@@ -10,29 +10,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── EXISTING MODELS (unchanged structure, role + doctor relation added to User) ──
+
 model User {
   id            String          @id @default(cuid())
   name          String
   email         String          @unique
   abhaId        String?         @unique
   passwordHash  String
+  role          String          @default("PATIENT")  // "PATIENT" | "DOCTOR"
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  
-  medicalRecords  MedicalRecord[]
-  emergencyProfile EmergencyProfile?
+
+  medicalRecords    MedicalRecord[]
+  emergencyProfile  EmergencyProfile?
+  visitSummaries    VisitSummary[]
+  prescriptions     Prescription[]
+  medicineReminders MedicineReminder[]
+  healthEvents      HealthEvent[]
+  chatMessages      ChatMessage[]
+
+  // Doctor relations
+  doctor            Doctor?
+  accessesGranted   AccessPermission[] @relation("PatientAccess")
+  doctorUploads     DoctorUpload[]
 }
 
 model MedicalRecord {
-  id          String   @id @default(cuid())
-  userId      String
-  fileUrl     String
-  fileName    String
-  fileType    String
-  aiSummary   String?
-  uploadedAt  DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  userId        String
+  fileUrl       String
+  fileName      String
+  fileType      String
+  aiSummary     String?
+  extractedData String?
+  uploadedAt    DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthEvents  HealthEvent[]
 }
 
 model EmergencyProfile {
@@ -44,6 +59,140 @@ model EmergencyProfile {
   medications           String  @default("")
   emergencyContactName  String  @default("")
   emergencyContactPhone String  @default("")
-  
+
   user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── PHASE 2 MODELS (unchanged) ───────────────────────────────────────────────
+
+model VisitSummary {
+  id              String   @id @default(cuid())
+  userId          String
+  audioUrl        String?
+  transcript      String?
+  diagnosis       String?
+  medicines       String?
+  instructions    String?
+  followUpDate    String?
+  doctorName      String?
+  visitDate       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthEvents    HealthEvent[]
+}
+
+model Prescription {
+  id          String   @id @default(cuid())
+  userId      String
+  imageUrl    String?
+  rawText     String?
+  medicines   String
+  analyzedAt  DateTime @default(now())
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminders   MedicineReminder[]
+  healthEvents HealthEvent[]
+}
+
+model MedicineReminder {
+  id             String   @id @default(cuid())
+  userId         String
+  prescriptionId String?
+  medicineName   String
+  dosage         String
+  times          String
+  startDate      DateTime @default(now())
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prescription   Prescription? @relation(fields: [prescriptionId], references: [id])
+}
+
+model HealthEvent {
+  id              String   @id @default(cuid())
+  userId          String
+  type            String
+  title           String
+  description     String?
+  severity        String?
+  recordId        String?
+  visitId         String?
+  prescriptionId  String?
+  eventDate       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  record          MedicalRecord? @relation(fields: [recordId], references: [id])
+  visit           VisitSummary?  @relation(fields: [visitId], references: [id])
+  prescription    Prescription?  @relation(fields: [prescriptionId], references: [id])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── PHASE 3: DOCTOR PANEL MODELS ─────────────────────────────────────────────
+
+model Doctor {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  specialty     String
+  hospital      String   @default("")
+  licenseNumber String   @default("")
+  createdAt     DateTime @default(now())
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessRequests AccessPermission[]
+  clinicalNotes  ClinicalNote[]
+  doctorUploads  DoctorUpload[]
+}
+
+model AccessPermission {
+  id          String   @id @default(cuid())
+  doctorId    String
+  patientId   String
+  status      String   @default("PENDING")  // "PENDING" | "APPROVED" | "DENIED" | "REVOKED"
+  accessType  String   @default("READ")
+  message     String?
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient     User     @relation("PatientAccess", fields: [patientId], references: [id], onDelete: Cascade)
+}
+
+model ClinicalNote {
+  id          String   @id @default(cuid())
+  doctorId    String
+  patientId   String
+  content     String
+  aiSummary   String?
+  visitDate   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+model DoctorUpload {
+  id          String   @id @default(cuid())
+  doctorId    String
+  patientId   String
+  fileUrl     String
+  fileName    String
+  fileType    String
+  reportType  String   @default("report")  // "report" | "prescription" | "lab"
+  notes       String?
+  uploadedAt  DateTime @default(now())
+
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient     User     @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }

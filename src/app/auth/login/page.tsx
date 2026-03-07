@@ -4,11 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
-import { Heart, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Heart, Mail, Lock, ArrowRight, Eye, EyeOff, User, Stethoscope } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
     const router = useRouter()
+    const [role, setRole] = useState<'PATIENT' | 'DOCTOR'>('PATIENT')
     const [loading, setLoading] = useState(false)
     const [showPass, setShowPass] = useState(false)
     const [form, setForm] = useState({ email: '', password: '' })
@@ -26,7 +27,7 @@ export default function LoginPage() {
                 toast.error('Invalid email or password')
             } else {
                 toast.success('Welcome back!')
-                router.push('/dashboard')
+                router.push(role === 'DOCTOR' ? '/doctor/dashboard' : '/dashboard')
                 router.refresh()
             }
         } catch {
@@ -39,23 +40,37 @@ export default function LoginPage() {
     return (
         <div className="min-h-[calc(100vh-64px)] bg-medical-gradient flex items-center justify-center p-4">
             <div className="w-full max-w-md">
-                {/* Card */}
                 <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8">
-                    {/* Logo */}
                     <div className="text-center mb-8">
                         <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
                             <Heart className="w-7 h-7 text-white" />
                         </div>
                         <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-                        <p className="text-slate-500 text-sm mt-1">Sign in to your ABHA HealthQR account</p>
+                        <p className="text-slate-500 text-sm mt-1">Sign in to your account</p>
+                    </div>
+
+                    <div className="flex bg-slate-100 p-1 rounded-xl mb-6">
+                        <button
+                            type="button"
+                            onClick={() => setRole('PATIENT')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-lg transition-all ${role === 'PATIENT' ? 'bg-white text-cyan-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <User className="w-4 h-4" /> Patient
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setRole('DOCTOR')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-lg transition-all ${role === 'DOCTOR' ? 'bg-white text-teal-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        >
+                            <Stethoscope className="w-4 h-4" /> Doctor
+                        </button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Email */}
                         <div>
                             <label className="label">Email address</label>
                             <div className="relative">
-                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 w-5 h-5" />
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                                 <input
                                     type="email"
                                     placeholder="you@example.com"
@@ -68,7 +83,6 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        {/* Password */}
                         <div>
                             <label className="label">Password</label>
                             <div className="relative">
@@ -95,7 +109,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg"
+                            className={`w-full flex items-center justify-center gap-2 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg ${role === 'DOCTOR' ? 'bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700' : 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700'}`}
                         >
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

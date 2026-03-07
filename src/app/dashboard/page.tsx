@@ -27,7 +27,10 @@ export default function DashboardPage() {
 
     useEffect(() => {
         if (status === 'unauthenticated') router.push('/auth/login')
-    }, [status, router])
+        else if (status === 'authenticated' && (session?.user as any)?.role === 'DOCTOR') {
+            router.push('/doctor/dashboard')
+        }
+    }, [status, session, router])
 
     useEffect(() => {
         if (status === 'authenticated') {
