@@ -260,6 +260,84 @@ export default function ConsultationPage() {
         {/* Column 2 - Live Consultation */}
         <div className="flex-1 flex flex-col gap-4 min-w-0">
           <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="glass-card rounded-2xl p-5 flex-1 flex flex-col"
+          >
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Prescriptions</h4>
+            <div className="flex flex-col gap-2">
+              {prescriptions.map((rx, i) => (
+                <div
+                  key={i}
+                  className={`rounded-lg p-3 border-l-[3px] ${rx.active ? "border-primary-light bg-primary-light/5" : "border-muted-foreground/20 bg-muted/60 opacity-60"}`}
+                >
+                  <div className="flex items-start gap-2">
+                    <Pill size={14} className={rx.active ? "text-primary-light mt-0.5" : "text-muted-foreground mt-0.5"} />
+                    <div>
+                      <p className={`text-sm font-medium ${rx.active ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                        {rx.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{rx.dosage} - {rx.duration}</p>
+                      <p className="text-xs text-muted-foreground/60 mt-0.5">{rx.date}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Column 3 - Patient History */}
+        <div className="lg:w-[280px] xl:w-[300px] flex flex-col gap-4 shrink-0">
+          {/* Previous Summaries */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="glass-card rounded-2xl p-5"
+          >
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Previous Summaries</h4>
+            <div className="relative mb-3">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-surface border border-border rounded-lg pl-8 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary-light"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              {patientData.visits.map((visit, i) => (
+                <button
+                  key={i}
+                  onClick={() => setExpandedVisit(expandedVisit === i + 10 ? null : i + 10)}
+                  className="w-full text-left glass-card rounded-lg p-3 hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono text-primary-light">{visit.date}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent">{visit.type}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{visit.doctor}</p>
+                  <AnimatePresence>
+                    {expandedVisit === i + 10 && (
+                      <motion.p
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="text-xs text-foreground/60 mt-2"
+                      >
+                        {visit.complaint}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Prescription History */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="glass-card rounded-2xl p-5 flex-1 flex flex-col"
@@ -439,84 +517,6 @@ export default function ConsultationPage() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        </div>
-
-        {/* Column 3 - Patient History */}
-        <div className="lg:w-[280px] xl:w-[300px] flex flex-col gap-4 shrink-0">
-          {/* Previous Summaries */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="glass-card rounded-2xl p-5"
-          >
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Previous Summaries</h4>
-            <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-surface border border-border rounded-lg pl-8 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary-light"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              {patientData.visits.map((visit, i) => (
-                <button
-                  key={i}
-                  onClick={() => setExpandedVisit(expandedVisit === i + 10 ? null : i + 10)}
-                  className="w-full text-left glass-card rounded-lg p-3 hover:bg-muted transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-primary-light">{visit.date}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent">{visit.type}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">{visit.doctor}</p>
-                  <AnimatePresence>
-                    {expandedVisit === i + 10 && (
-                      <motion.p
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="text-xs text-foreground/60 mt-2"
-                      >
-                        {visit.complaint}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
-                </button>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Prescription History */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="glass-card rounded-2xl p-5"
-          >
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Prescriptions</h4>
-            <div className="flex flex-col gap-2">
-              {prescriptions.map((rx, i) => (
-                <div
-                  key={i}
-                  className={`rounded-lg p-3 border-l-[3px] ${rx.active ? "border-primary-light bg-primary-light/5" : "border-muted-foreground/20 bg-muted/60 opacity-60"}`}
-                >
-                  <div className="flex items-start gap-2">
-                    <Pill size={14} className={rx.active ? "text-primary-light mt-0.5" : "text-muted-foreground mt-0.5"} />
-                    <div>
-                      <p className={`text-sm font-medium ${rx.active ? "text-foreground" : "text-muted-foreground line-through"}`}>
-                        {rx.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{rx.dosage} - {rx.duration}</p>
-                      <p className="text-xs text-muted-foreground/60 mt-0.5">{rx.date}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           </motion.div>
         </div>
       </div>
